@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { ExternalLink, Sparkles, Newspaper } from 'lucide-react';
 import { TemplateSelectionModal } from '../carousel';
 import type { NewsItem } from '../types/news';
+import { motion } from 'framer-motion';
 
 interface NewsPostCardProps {
   news: NewsItem;
@@ -52,40 +53,51 @@ const NewsPostCard: React.FC<NewsPostCardProps> = ({ news, index, onGenerateCaro
     window.open(news.url, '_blank');
   };
 
+  // Limita o conteúdo para exibir apenas o início com "..."
+  const getTruncatedContent = (content: string, maxLength: number) => {
+    return content.length > maxLength ? content.substring(0, maxLength) + '...' : content;
+  };
+
   return (
-    <div className="relative w-full max-w-[300px] bg-black rounded-lg overflow-hidden shadow-md hover:shadow-lg transition-shadow border border-white/10">
-      <div className="px-4 py-3 flex items-center justify-between bg-black border-b border-white/10">
+    <motion.div
+      className="relative w-full max-w-[300px] rounded-2xl overflow-hidden shadow-lg bg-white"
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: 20 }}
+      transition={{ duration: 0.3 }}
+    >
+      <div className="px-4 py-3 flex items-center justify-between text-gray-800 border-b border-gray-600">
         <div className="flex items-center space-x-4">
-          <div className="flex items-center" style={{ color: 'rgb(147, 51, 234)' }}>
+          <div className="flex items-center text-purple-400">
             <Newspaper className="w-4 h-4 mr-1" />
-            <span className="font-bold text-xs text-white">{news.niches.name}</span>
+            <span className="font-bold text-xs text-gray-400">{news.niches.name}</span>
           </div>
         </div>
-        <span className="text-sm text-white/40 font-bold">{formatTimeAgo(news.publishedAt)}</span>
+        <span className="text-sm text-gray-400 font-bold">{formatTimeAgo(news.publishedAt)}</span>
       </div>
-      
+
       <div className="relative w-full" style={{ paddingBottom: '140%' }}>
         {/* News Content */}
-        <div className="absolute top-0 left-0 w-full h-full overflow-hidden bg-black">
+        <div className="absolute top-0 left-0 w-full h-full overflow-hidden bg-white">
           {/* Image */}
           {news.image && (
-            <div className="relative w-full h-[200px] overflow-hidden bg-white/5">
+            <div className="relative w-full h-[200px] overflow-hidden bg-white">
               <img
                 src={news.image}
                 alt={news.title}
                 className="w-full h-full object-cover"
               />
               <div className="absolute top-2 left-2 flex gap-1">
-                <span className="px-2 py-0.5 bg-black/70 backdrop-blur-sm rounded text-xs text-white font-bold">
+                <span className="px-2 py-0.5 bg-black bg-opacity-60 rounded-lg text-xs text-white font-bold">
                   {getFlagEmoji(news.country)} {news.country.toUpperCase()}
                 </span>
-                <span className="px-2 py-0.5 bg-black/70 backdrop-blur-sm rounded text-xs text-white font-bold">
+                <span className="px-2 py-0.5 bg-black bg-opacity-60 rounded-lg text-xs text-white font-bold">
                   {news.lang.toUpperCase()}
                 </span>
               </div>
               {news.recommend && (
                 <div className="absolute top-2 right-2">
-                  <div className="px-3 py-1.5 bg-gradient-to-r from-blue-600 to-cyan-600 backdrop-blur-sm rounded-full text-xs text-white font-bold flex items-center gap-1.5 shadow-lg">
+                  <div className="px-3 py-1.5 bg-gradient-to-r from-primary-500 to-accent-500 backdrop-blur-sm rounded-full text-xs text-white font-bold flex items-center gap-1.5 shadow-glow">
                     <Sparkles className="w-3.5 h-3.5" />
                     <span>Recomendado pela IA</span>
                   </div>
@@ -93,7 +105,7 @@ const NewsPostCard: React.FC<NewsPostCardProps> = ({ news, index, onGenerateCaro
               )}
             </div>
           )}
-          
+
           {/* Content */}
           <div 
             className="p-4 h-[calc(100%-200px)] overflow-y-auto"
@@ -117,15 +129,15 @@ const NewsPostCard: React.FC<NewsPostCardProps> = ({ news, index, onGenerateCaro
                 background-color: #4B5563;
               }
             `}</style>
-            <h3 className="text-white font-bold text-base mb-2 line-clamp-3">
+            <h3 className="text-gray-900 font-bold text-base mb-2 line-clamp-3">
               {news.title}
             </h3>
-            <p className="text-white/70 text-sm line-clamp-6 mb-3">
-              {news.description}
+            <p className="text-gray-800 text-sm mb-3 line-clamp-3">
+              {getTruncatedContent(news.description, 150)}
             </p>
             {news.content && (
-              <p className="text-white/50 text-xs line-clamp-8">
-                {news.content}
+              <p className="text-gray-700 text-xs line-clamp-8">
+                {getTruncatedContent(news.content, 200)}
               </p>
             )}
           </div>
@@ -134,22 +146,22 @@ const NewsPostCard: React.FC<NewsPostCardProps> = ({ news, index, onGenerateCaro
         {/* Buttons Overlay */}
         <button
           onClick={handleOpenOriginal}
-          className="absolute top-3 right-1 z-50 bg-black text-white px-3 py-1.5 rounded text-sm flex items-center space-x-2 transition-colors"
+          className="absolute top-3 right-1 z-50 bg-primary-500/80 text-white px-3 py-1.5 rounded-lg text-sm flex items-center space-x-2 hover:bg-primary-500/30 transition-all"
         >
           <ExternalLink className="w-4 h-4" />
           <span>See Content</span>
         </button>
 
         <div className="absolute bottom-4 right-4 z-50 flex flex-col items-end space-y-2">
-          <div className="bg-black/70 backdrop-blur-sm text-white px-3 py-1.5 rounded-full text-sm flex items-center space-x-2">
-            <Newspaper className="w-4 h-4 text-white" />
+          <div className="bg-white text-gray-900 px-3 py-1.5 rounded-full text-sm flex items-center space-x-2">
+            <Newspaper className="w-4 h-4 text-gray-900" />
             <span>#{index + 1}</span>
           </div>
           {onGenerateCarousel && (
             <>
               <button
                 onClick={handleOpenModal}
-                className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white px-3 py-1.5 rounded-full text-sm flex items-center space-x-2 transition-all shadow-lg hover:shadow-xl"
+                className="bg-gradient-to-r from-primary-500 to-accent-500 hover:from-primary-600 hover:to-accent-600 text-white px-3 py-1.5 rounded-full text-sm flex items-center space-x-2 transition-all shadow-glow hover:shadow-xl"
               >
                 <Sparkles className="w-4 h-4" />
                 <span>Gerar</span>
@@ -164,7 +176,7 @@ const NewsPostCard: React.FC<NewsPostCardProps> = ({ news, index, onGenerateCaro
           )}
         </div>
       </div>
-    </div>
+    </motion.div>
   );
 };
 

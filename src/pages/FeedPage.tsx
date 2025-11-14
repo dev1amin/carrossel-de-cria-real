@@ -1,22 +1,18 @@
-import React, { useState, useEffect } from 'react';
-import Header from '../components/Header';
+import React, { useState, useEffect, useMemo } from 'react';
 import Feed from '../components/Feed';
 import Navigation from '../components/Navigation';
 import LoadingBar from '../components/LoadingBar';
-import PageTitle from '../components/PageTitle';
+import FilterBar from '../components/FilterBar';
 import Toast, { ToastMessage } from '../components/Toast';
 import { SortOption, Post } from '../types';
 import type { GenerationQueueItem } from '../carousel';
 import { getFeed } from '../services/feed';
-import { testCarouselData } from '../data/testCarouselData';
-import { 
-  templateService, 
-  templateRenderer, 
-  generateCarousel, 
-  AVAILABLE_TEMPLATES, 
-  CarouselEditorTabs, 
-  type CarouselTab,
-  type CarouselData
+import {
+  templateService,
+  templateRenderer,
+  generateCarousel,
+  AVAILABLE_TEMPLATES,
+  CarouselEditorTabs
 } from '../carousel';
 import { useEditorTabs } from '../contexts/EditorTabsContext';
 import { useGenerationQueue } from '../contexts/GenerationQueueContext';
@@ -26,20 +22,37 @@ interface FeedPageProps {
 }
 
 const FeedPage: React.FC<FeedPageProps> = ({ unviewedCount = 0 }) => {
-  const [searchTerm, setSearchTerm] = useState('');
   const [activeSort, setActiveSort] = useState<SortOption>('popular');
   const [toasts, setToasts] = useState<ToastMessage[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [posts, setPosts] = useState<Post[]>([]);
   const [error, setError] = useState<string | null>(null);
-  
-  // Usa o contexto compartilhado de abas
-  const { editorTabs, addEditorTab: addTab, closeEditorTab, closeAllEditorTabs, shouldShowEditor, setShouldShowEditor } = useEditorTabs();
-  
-  // Usa o contexto global da fila
-  const { addToQueue, updateQueueItem, removeFromQueue, generationQueue } = useGenerationQueue();
 
-  // Esconde o editor ao entrar na página
+  const {
+    editorTabs,
+    closeEditorTab,
+    closeAllEditorTabs,
+    shouldShowEditor,
+    setShouldShowEditor
+  } = useEditorTabs();
+
+  const { addToQueue, updateQueueItem, generationQueue } = useGenerationQueue();
+
+  const getUserName = (): string => {
+    try {
+      const userStr = localStorage.getItem('user');
+      if (userStr) {
+        const user = JSON.parse(userStr);
+        return user.name || user.username || 'Usuário';
+      }
+    } catch (error) {
+      console.error('Erro ao obter nome do usuário:', error);
+    }
+    return 'Usuário';
+  };
+
+  const userName = getUserName();
+
   useEffect(() => {
     setShouldShowEditor(false);
   }, [setShouldShowEditor]);
@@ -56,10 +69,11 @@ const FeedPage: React.FC<FeedPageProps> = ({ unviewedCount = 0 }) => {
       } catch (err) {
         console.error('❌ Erro ao carregar feed:', err);
         const errorMessage = err instanceof Error ? err.message : 'Failed to load feed';
-        
-        // Mensagens mais amigáveis para erros específicos
+
         if (errorMessage.includes('adicionar pelo menos 1 influenciador')) {
-          setError('Você precisa adicionar pelo menos 1 influenciador como interesse antes de gerar seu feed. Configure isso nas configurações do seu business.');
+          setError(
+            'Você precisa adicionar pelo menos 1 influenciador como interesse antes de gerar seu feed. Configure isso nas configurações do seu business.'
+          );
         } else if (errorMessage.includes('Feed generation failed')) {
           setError('Não foi possível gerar seu feed no momento. Tente novamente em alguns instantes.');
         } else {
@@ -73,86 +87,42 @@ const FeedPage: React.FC<FeedPageProps> = ({ unviewedCount = 0 }) => {
     loadFeed();
   }, []);
 
-  const handleSearch = (term: string) => {
-    setSearchTerm(term);
-  };
-
-  const addEditorTab = (carousel: { slides: string[]; carouselData: CarouselData; title: string; id?: string }) => {
-    const tabId = carousel.id || `tab-${Date.now()}`;
-    
-    const newTab: CarouselTab = {
-      id: tabId,
-      slides: carousel.slides,
-      carouselData: carousel.carouselData,
-      title: carousel.title,
-    };
-    
-    addTab(newTab);
-  };
-
-  const handleTestEditor = async () => {
-    try {
-      setIsLoading(true);
-      const carouselData = testCarouselData[0];
-      const templateId = carouselData.dados_gerais.template;
-
-      console.log(`Fetching template ${templateId}...`);
-      const templateSlides = await templateService.fetchTemplate(templateId);
-
-      console.log('Rendering slides with test data...');
-      const rendered = templateRenderer.renderAllSlides(templateSlides, carouselData);
-
-      const template = AVAILABLE_TEMPLATES.find(t => t.id === templateId);
-      addEditorTab({
-        id: `test-${templateId}`,
-        slides: rendered,
-        carouselData,
-        title: template?.name || 'Teste',
-      });
-    } catch (error) {
-      console.error('Failed to load test editor:', error);
-      alert('Erro ao carregar editor de teste. Verifique o console.');
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
   const addToast = (message: string, type: 'success' | 'error') => {
     const toast: ToastMessage = { id: `toast-${Date.now()}`, message, type };
-    setToasts(prev => [...prev, toast]);
+    setToasts((prev) => [...prev, toast]);
   };
 
   const removeToast = (id: string) => {
-    setToasts(prev => prev.filter(t => t.id !== id));
+    setToasts((prev) => prev.filter((t) => t.id !== id));
   };
 
   const handleGenerateCarousel = async (code: string, templateId: string, postId?: number) => {
     console.log('🚀 FeedPage: handleGenerateCarousel iniciado', { code, templateId, postId });
-    
-    const template = AVAILABLE_TEMPLATES.find(t => t.id === templateId);
+
+    const template = AVAILABLE_TEMPLATES.find((t) => t.id === templateId);
     const queueItem: GenerationQueueItem = {
       id: `${code}-${templateId}-${Date.now()}`,
       postCode: code,
       templateId,
       templateName: template?.name || `Template ${templateId}`,
       status: 'generating',
-      createdAt: Date.now(),
+      createdAt: Date.now()
     };
 
     addToQueue(queueItem);
     console.log('✅ Item adicionado à fila:', queueItem.id);
 
     try {
-      // Obter JWT token do localStorage
       const jwtToken = localStorage.getItem('access_token');
-      
-      console.log(`⏳ Chamando generateCarousel para post: ${code} com template: ${templateId}, postId: ${postId}, jwt: ${jwtToken ? 'presente' : 'ausente'}`);
+
+      console.log(
+        `⏳ Chamando generateCarousel para post: ${code} com template: ${templateId}, postId: ${postId}, jwt: ${
+          jwtToken ? 'presente' : 'ausente'
+        }`
+      );
       const result = await generateCarousel(code, templateId, jwtToken || undefined, postId);
       console.log('✅ Carousel generated successfully:', result);
-      console.log('✅ Tipo do result:', typeof result, 'É array?', Array.isArray(result));
-      console.log('✅ Length do result:', Array.isArray(result) ? result.length : 'N/A');
 
-      // Verifica se result é um array
       if (!result) {
         console.error('❌ Result é null ou undefined');
         addToast('Erro: resposta vazia do servidor', 'error');
@@ -160,9 +130,7 @@ const FeedPage: React.FC<FeedPageProps> = ({ unviewedCount = 0 }) => {
         return;
       }
 
-      // Se result não for array, tenta tratá-lo como objeto único
       const resultArray = Array.isArray(result) ? result : [result];
-      console.log('✅ resultArray:', resultArray);
 
       if (resultArray.length === 0) {
         console.error('❌ Array de resultado vazio');
@@ -172,27 +140,25 @@ const FeedPage: React.FC<FeedPageProps> = ({ unviewedCount = 0 }) => {
       }
 
       const carouselData = resultArray[0];
-      console.log('✅ carouselData extraído:', carouselData);
-      console.log('✅ dados_gerais:', carouselData?.dados_gerais);
 
       if (!carouselData || !carouselData.dados_gerais) {
         console.error('❌ Dados inválidos:', { carouselData });
         addToast('Erro: formato de dados inválido', 'error');
-        updateQueueItem(queueItem.id, { status: 'error', errorMessage: 'Formato de dados inválido' });
+        updateQueueItem(queueItem.id, {
+          status: 'error',
+          errorMessage: 'Formato de dados inválido'
+        });
         return;
       }
 
-      // render slides
       const responseTemplateId = carouselData.dados_gerais.template;
       console.log(`⏳ Buscando template ${responseTemplateId}...`);
-      
+
       const templateSlides = await templateService.fetchTemplate(responseTemplateId);
       console.log('✅ Template obtido, total de slides:', templateSlides?.length || 0);
-      
-      const rendered = templateRenderer.renderAllSlides(templateSlides, carouselData);
-      console.log('✅ Slides renderizados:', rendered.length);
 
-      // cria item de galeria
+      const rendered = templateRenderer.renderAllSlides(templateSlides, carouselData);
+
       const galleryItem = {
         id: queueItem.id,
         postCode: code,
@@ -200,61 +166,46 @@ const FeedPage: React.FC<FeedPageProps> = ({ unviewedCount = 0 }) => {
         createdAt: Date.now(),
         slides: rendered,
         carouselData,
-        viewed: false,
+        viewed: false
       };
-      console.log('✅ Item de galeria criado:', galleryItem.id);
 
-      // atualiza estado local da galeria (se houver) e salva no cache + dispara evento
       try {
         console.log('⏳ Importando CacheService...');
         const { CacheService, CACHE_KEYS } = await import('../services/cache');
         console.log('✅ CacheService importado');
-        
+
         const existing = CacheService.getItem<any[]>(CACHE_KEYS.GALLERY) || [];
-        console.log('✅ Galeria existente no cache:', existing.length, 'itens');
-        
         const updated = [galleryItem, ...existing];
-        console.log('✅ Nova galeria terá:', updated.length, 'itens');
-        
+
         CacheService.setItem(CACHE_KEYS.GALLERY, updated);
-        console.log('✅ Galeria salva no cache');
-        
         window.dispatchEvent(new CustomEvent('gallery:updated', { detail: updated }));
-        console.log('✅ Evento gallery:updated disparado com', updated.length, 'itens');
       } catch (err) {
         console.error('❌ Erro ao atualizar cache/dispatch da galeria:', err);
       }
 
-      // toast e atualização do item na fila (marca como completed com os dados)
-      console.log('⏳ Adicionando toast...');
       addToast('Carrossel criado e adicionado à galeria', 'success');
-      console.log('✅ Toast adicionado');
-      
-      console.log('⏳ Atualizando item na fila para completed...');
       updateQueueItem(queueItem.id, {
         status: 'completed',
         completedAt: Date.now(),
         slides: rendered,
-        carouselData: carouselData,
+        carouselData: carouselData
       });
-      console.log('✅ Item atualizado na fila como completed');
       console.log('🎉 Processo completo!');
     } catch (error) {
       console.error('❌ ERRO em handleGenerateCarousel:', error);
-      console.error('❌ Stack:', error instanceof Error ? error.stack : 'N/A');
       addToast('Erro ao gerar carrossel. Tente novamente.', 'error');
       updateQueueItem(queueItem.id, {
         status: 'error',
-        errorMessage: error instanceof Error ? error.message : 'Erro desconhecido',
+        errorMessage: error instanceof Error ? error.message : 'Erro desconhecido'
       });
     }
   };
 
   if (error) {
     return (
-      <div className="min-h-screen bg-black text-white flex items-center justify-center p-4">
-        <div className="bg-red-500/10 border border-red-500/50 rounded-lg p-4 max-w-md">
-          <p className="text-red-500">{error}</p>
+      <div className="min-h-screen bg-light text-dark flex items-center justify-center p-4">
+        <div className="bg-red-50 border border-red-200 rounded-lg p-4 max-w-md">
+          <p className="text-red-600">{error}</p>
           <button
             onClick={() => window.location.reload()}
             className="mt-4 text-white bg-red-500 px-4 py-2 rounded-lg hover:bg-red-600 transition-colors"
@@ -266,10 +217,12 @@ const FeedPage: React.FC<FeedPageProps> = ({ unviewedCount = 0 }) => {
     );
   }
 
+  const memoizedNavigation = useMemo(() => <Navigation currentPage="feed" unviewedCount={unviewedCount} />, [unviewedCount]);
+
   return (
-    <div className="flex h-screen bg-black">
-      <Navigation currentPage="feed" unviewedCount={unviewedCount} />
-      <div className="flex-1 ml-16">
+    <div className="flex h-screen bg-light">
+      {memoizedNavigation}
+      <div className="flex-1">
         {shouldShowEditor && (
           <CarouselEditorTabs
             tabs={editorTabs}
@@ -280,21 +233,66 @@ const FeedPage: React.FC<FeedPageProps> = ({ unviewedCount = 0 }) => {
         )}
         <Toast toasts={toasts} onRemove={removeToast} />
         <LoadingBar isLoading={isLoading} />
-        <Header
-          onSearch={handleSearch}
-          activeSort={activeSort}
-          onSortChange={setActiveSort}
-          onTestEditor={handleTestEditor}
-        />
-        {/* Fila global removida daqui - agora está no App.tsx */}
-        <main className={`pt-14 ${generationQueue.length > 0 ? 'mt-20' : ''}`}>
-          <PageTitle title="Feed" />
-          <Feed
-            posts={posts}
-            searchTerm={searchTerm}
-            activeSort={activeSort}
-            onGenerateCarousel={handleGenerateCarousel}
-          />
+
+        <main className={`${generationQueue.length > 0 ? 'mt-20' : ''}`}>
+          <section className="relative pb-20 md:pb-24">
+
+            {/* Bola de luz agora com animação de cima para baixo */}
+            <div
+              className="absolute top-[-200px] left-1/2 -translate-x-1/2 w-[900px] h-[900px] pointer-events-none"
+              style={{
+                background: "radial-gradient(circle, rgba(59,130,246,0.3) 0%, rgba(59,130,246,0.2) 50%, rgba(255,255,255,0) 100%)",
+                filter: "blur(70px)",
+                animation: "glowDown 3s ease-in-out infinite",
+              }}
+            />
+
+            {/* Quadrados mais visíveis e ocupando mais altura (até metade do carrossel) */}
+            <div
+              className="pointer-events-none absolute inset-0 opacity-60"
+              style={{
+                backgroundImage: `
+                  linear-gradient(rgba(59,130,246,0.5) 1px, transparent 1px),
+                  linear-gradient(90deg, rgba(59,130,246,0.5) 1px, transparent 1px)
+                `,
+                backgroundSize: "50px 50px",
+                height: "50vh", // A altura foi ajustada para ocupar até metade do primeiro carrossel
+              }}
+            />
+
+            {/* Fade azul para branco no final */}
+            <div
+              className="absolute inset-0 bottom-0 pointer-events-none"
+              style={{
+                background: "linear-gradient(to bottom, rgba(249,250,251,0) 30%, rgba(249,250,251,0.95) 100%)"
+              }}
+            />
+
+            {/* Conteúdo normal */}
+            <div className="relative max-w-5xl mx-auto px-8 pt-[6rem] pb-[4.5rem] space-y-6">
+              <div className="text-center">
+                <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold text-dark mb-3">
+                  Bem vindo de volta {userName}!
+                </h1>
+                <p className="text-lg md:text-xl text-gray-dark">
+                  Aqui está o seu feed de posts!
+                </p>
+              </div>
+
+              <FilterBar activeSort={activeSort} onSortChange={setActiveSort} />
+            </div>
+
+          </section>
+
+          {/* Feed logo em seguida */}
+          <section className="max-w-6xl mx-auto px-8 -mt-[6.5rem]">
+            <Feed
+              posts={posts}
+              searchTerm=""
+              activeSort={activeSort}
+              onGenerateCarousel={handleGenerateCarousel}
+            />
+          </section>
         </main>
       </div>
     </div>

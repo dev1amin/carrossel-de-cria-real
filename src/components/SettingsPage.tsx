@@ -456,7 +456,7 @@ const SettingsPage: React.FC<SettingsPageProps> = ({ onPageChange, setIsLoading 
                 />
                 <button
                   onClick={addItem}
-                  className="px-3 py-1 bg-white text-black rounded hover:bg-gray-200 font-medium"
+                  className="px-3 py-1 bg-gradient-to-r from-primary-500 to-accent-500 text-white rounded-lg hover:from-primary-600 hover:to-accent-600 font-medium transition-all shadow-glow"
                 >
                   Add
                 </button>
@@ -465,12 +465,12 @@ const SettingsPage: React.FC<SettingsPageProps> = ({ onPageChange, setIsLoading 
                 {arrayValue.map((item: string, index: number) => (
                   <span
                     key={index}
-                    className="inline-flex items-center gap-1 px-2 py-1 bg-gray-700 rounded text-sm"
+                    className="inline-flex items-center gap-1 px-2 py-1 glass-card border border-primary-500/30 rounded-lg text-sm"
                   >
                     {item}
                     <button
                       onClick={() => removeItem(index)}
-                      className="text-gray-400 hover:text-white"
+                      className="text-white/60 hover:text-white transition-colors"
                     >
                       ×
                     </button>
@@ -482,12 +482,12 @@ const SettingsPage: React.FC<SettingsPageProps> = ({ onPageChange, setIsLoading 
             <div className="flex flex-wrap gap-2 mt-1">
               {arrayValue.length > 0 ? (
                 arrayValue.map((item: string, index: number) => (
-                  <span key={index} className="px-2 py-1 bg-gray-700 rounded text-sm">
+                  <span key={index} className="px-2 py-1 glass-card border border-primary-500/30 rounded-lg text-sm">
                     {item}
                   </span>
                 ))
               ) : (
-                <span className="text-gray-500">None</span>
+                <span className="text-white/50">None</span>
               )}
             </div>
           )}
@@ -508,24 +508,24 @@ const SettingsPage: React.FC<SettingsPageProps> = ({ onPageChange, setIsLoading 
 
   if (isPageLoading) {
     return (
-      <div className="min-h-screen bg-black flex items-center justify-center">
-        <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-white"></div>
+      <div className="min-h-screen bg-gradient-dark flex items-center justify-center">
+        <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-primary-500"></div>
       </div>
     );
   }
 
   if (error) {
     return (
-      <div className="min-h-screen bg-black text-white p-4">
+      <div className="min-h-screen bg-gradient-dark text-white p-4">
         <div className="container mx-auto">
           <div className="flex items-center mb-8">
-            <button onClick={() => onPageChange('feed')} className="text-white">
+            <button onClick={() => onPageChange('feed')} className="text-white hover:text-primary-400 transition-colors">
               <ArrowLeft className="w-6 h-6" />
             </button>
             <h1 className="text-xl font-semibold ml-4">Settings</h1>
           </div>
-          <div className="bg-white/10 border border-white rounded-lg p-4">
-            <p className="text-white">{error}</p>
+          <div className="glass-card border border-red-500/50 rounded-xl p-4">
+            <p className="text-red-400">{error}</p>
           </div>
         </div>
       </div>
@@ -533,9 +533,9 @@ const SettingsPage: React.FC<SettingsPageProps> = ({ onPageChange, setIsLoading 
   }
 
   return (
-    <div className="flex flex-col h-screen bg-black text-white">
+    <div className="flex flex-col h-screen bg-gradient-dark text-white">
       {/* Main Header */}
-      <header className="fixed top-0 left-0 right-0 bg-black h-14 z-[100] shadow-lg">
+      <header className="fixed top-0 left-0 right-0 bg-navy-500/80 backdrop-blur-xl h-14 z-[100] border-b border-primary-500/20 shadow-lg">
         <div className="container mx-auto px-4">
           <div className="flex items-center h-14">
             <img

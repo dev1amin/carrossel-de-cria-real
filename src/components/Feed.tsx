@@ -167,7 +167,7 @@ const Feed: React.FC<FeedProps> = ({ posts, searchTerm, activeSort, onGenerateCa
           }}
         />
       )}
-      <div className="min-h-screen bg-black">
+      <div>
       {filteredPosts.length > 0 ? (
         <div 
           ref={feedRef} 

@@ -1,20 +1,53 @@
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import {
+  Grid,
+  Newspaper,
+  Image,
+  ChevronRight,
+  User,
+  Ghost,
+  Wrench,
+} from 'lucide-react';
 
 interface NavigationProps {
-  currentPage?: 'feed' | 'settings' | 'gallery' | 'news' | 'chatbot';
-  onPageChange?: (page: 'feed' | 'settings' | 'gallery' | 'news' | 'chatbot') => void;
+  currentPage?: 'feed' | 'settings' | 'gallery' | 'news' | 'chatbot' | 'tools';
+  onPageChange?: (page: 'feed' | 'settings' | 'gallery' | 'news' | 'chatbot' | 'tools') => void;
   unviewedCount?: number;
 }
 
-const Navigation: React.FC<NavigationProps> = ({ currentPage, onPageChange, unviewedCount = 0 }) => {
+type MenuItem =
+  | { id: string; label: string; icon: React.ComponentType<any>; page: 'feed' | 'settings' | 'gallery' | 'news' | 'chatbot' }
+  | { id: string; label: string; icon: React.ComponentType<any>; onClick: () => void };
+
+const Navigation: React.FC<NavigationProps> = ({
+  currentPage,
+  onPageChange,
+  unviewedCount = 0,
+}) => {
   const navigate = useNavigate();
+  const [isExpanded, setIsExpanded] = useState(false);
 
-  const handlePageChange = (page: 'feed' | 'settings' | 'gallery' | 'news' | 'chatbot') => {
-    if (onPageChange) {
-      onPageChange(page);
+  const getUserName = (): string => {
+    try {
+      const userStr = localStorage.getItem('user');
+      if (userStr) {
+        const user = JSON.parse(userStr);
+        return user.name || user.username || 'Usuário';
+      }
+    } catch (error) {
+      console.error('Erro ao obter nome do usuário:', error);
     }
+    return 'Usuário';
+  };
 
-    // Atualiza a URL baseado na página
+  const userName = getUserName();
+
+  const handlePageChange = (
+    page: 'feed' | 'settings' | 'gallery' | 'news' | 'chatbot' | 'tools',
+  ) => {
+    onPageChange?.(page);
+
     switch (page) {
       case 'feed':
         navigate('/');
@@ -31,151 +64,112 @@ const Navigation: React.FC<NavigationProps> = ({ currentPage, onPageChange, unvi
       case 'settings':
         navigate('/settings');
         break;
+      case 'tools':
+        navigate('/create-carousel');
+        break;
     }
   };
+
+  const menuItems: MenuItem[] = [
+    { id: 'feed', label: 'Feed', icon: Grid, page: 'feed' },
+    { id: 'news', label: 'Notícias', icon: Newspaper, page: 'news' },
+    {
+      id: 'tools',
+      label: 'Ferramentas',
+      icon: Wrench,
+      onClick: () => navigate('/create-carousel'),
+    },
+    { id: 'gallery', label: 'Galeria', icon: Image, page: 'gallery' },
+  ];
+
   return (
-    <nav className="hidden md:flex fixed left-0 top-0 bottom-0 w-16 bg-black/90 backdrop-blur-lg border-r border-white/10 z-50 flex-col items-center py-8">
-      <div className="flex flex-col items-center space-y-8 py-10">
-        {/* Feed */}
-        <button
-          onClick={() => handlePageChange('feed')}
-          className={`p-3 rounded-lg transition-colors ${
-            currentPage === 'feed'
-              ? 'bg-white/10 text-white'
-              : 'text-white/60 hover:text-white/90 hover:bg-white/5'
-          }`}
-        >
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            width="24"
-            height="24"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            className="lucide lucide-grid w-6 h-6"
-          >
-            <rect width="7" height="7" x="3" y="3" rx="1" />
-            <rect width="7" height="7" x="14" y="3" rx="1" />
-            <rect width="7" height="7" x="14" y="14" rx="1" />
-            <rect width="7" height="7" x="3" y="14" rx="1" />
-          </svg>
-        </button>
+    <nav
+      onMouseEnter={() => setIsExpanded(true)}
+      onMouseLeave={() => setIsExpanded(false)}
+      className={`hidden md:flex fixed left-0 top-0 bottom-0 bg-white border-r border-gray-light z-50 flex-col transition-all duration-300 ${
+        isExpanded ? 'w-64' : 'w-16'
+      }`}
+    >
+      {/* Topo: Logo e Nome */}
+      <div className="border-b border-gray-light p-4 flex items-center gap-3 justify-center">
+        <Ghost className="w-6 h-6 text-blue flex-shrink-0" />
+        {isExpanded && (
+          <span className="text-dark font-bold text-lg whitespace-nowrap">
+            Content Busters
+          </span>
+        )}
+      </div>
 
-        {/* News */}
-        <button
-          onClick={() => handlePageChange('news')}
-          className={`p-3 rounded-lg transition-colors ${
-            currentPage === 'news'
-              ? 'bg-white/10 text-white'
-              : 'text-white/60 hover:text-white/90 hover:bg-white/5'
-          }`}
-        >
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            width="24"
-            height="24"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            className="lucide lucide-newspaper w-6 h-6"
-          >
-            <path d="M4 22h16a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2H8a2 2 0 0 0-2 2v16a2 2 0 0 1-2 2Zm0 0a2 2 0 0 1-2-2v-9c0-1.1.9-2 2-2h2" />
-            <path d="M18 14h-8" />
-            <path d="M15 18h-5" />
-            <path d="M10 6h8v4h-8V6Z" />
-          </svg>
-        </button>
+      {/* Menu Items */}
+      <div className="flex-1 flex flex-col py-4 space-y-2 px-2">
+        {menuItems.map((item) => {
+          const Icon = item.icon;
+          const isActive =
+            ('page' in item && currentPage === item.page) ||
+            (item.id === 'tools' && window.location.pathname === '/create-carousel');
 
-        {/* Create Carousel / ChatBot */}
-        <button
-          onClick={() => navigate('/create-carousel')}
-          className={`p-3 rounded-lg transition-colors ${
-            currentPage === 'chatbot'
-              ? 'bg-white/10 text-white'
-              : 'text-white/60 hover:text-white/90 hover:bg-white/5'
-          }`}
-        >
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            width="24"
-            height="24"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            className="lucide lucide-plus-circle w-6 h-6"
-          >
-            <circle cx="12" cy="12" r="10" />
-            <path d="M8 12h8" />
-            <path d="M12 8v8" />
-          </svg>
-        </button>
+          const handleClick = () => {
+            if ('onClick' in item) {
+              item.onClick();
+            } else if ('page' in item) {
+              handlePageChange(item.page);
+            }
+          };
 
-                {/* Gallery */}
-        <button
-          onClick={() => handlePageChange('gallery')}
-          className={`relative p-3 rounded-lg transition-colors ${
-            currentPage === 'gallery'
-              ? 'bg-white/10 text-white'
-              : 'text-white/60 hover:text-white/90 hover:bg-white/5'
-          }`}
-        >
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            width="24"
-            height="24"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            className="lucide lucide-image w-6 h-6"
-          >
-            <rect width="18" height="18" x="3" y="3" rx="2" ry="2" />
-            <circle cx="9" cy="9" r="2" />
-            <path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21" />
-          </svg>
-          {unviewedCount > 0 && (
-            <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
-              {unviewedCount}
-            </span>
+          return (
+            <button
+              key={item.id}
+              onClick={handleClick}
+              className={`flex items-center gap-3 p-3 rounded-lg transition-colors ${
+                isActive
+                  ? 'bg-blue-light text-blue'
+                  : 'text-gray hover:text-dark hover:bg-light'
+              } ${!isExpanded ? 'justify-center' : ''}`}
+            >
+              <Icon className="w-6 h-6 flex-shrink-0" />
+              {isExpanded && <span className="font-medium">{item.label}</span>}
+              {item.id === 'gallery' && unviewedCount > 0 && (
+                <span className="ml-auto bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
+                  {unviewedCount}
+                </span>
+              )}
+            </button>
+          );
+        })}
+      </div>
+
+      {/* Rodapé: User e Actions */}
+      <div className="border-t border-gray-light p-4 space-y-3">
+        {/* User Info */}
+        <div className="flex items-center gap-3 justify-center">
+          <div className="w-10 h-10 rounded-full bg-light flex items-center justify-center flex-shrink-0">
+            <User className="w-5 h-5 text-blue" />
+          </div>
+          {isExpanded && (
+            <div className="flex-1 min-w-0">
+              <p className="text-dark text-sm font-medium truncate">
+                {userName}
+              </p>
+              <button
+                onClick={() => navigate('/settings')}
+                className="text-gray hover:text-dark text-xs flex items-center gap-1 transition-colors"
+              >
+                Configurações <ChevronRight className="w-3 h-3" />
+              </button>
+            </div>
           )}
-        </button>
+        </div>
 
-        {/* Settings */}
-        <button
-          onClick={() => handlePageChange('settings')}
-          className={`p-3 rounded-lg transition-colors ${
-            currentPage === 'settings'
-              ? 'bg-white/10 text-white'
-              : 'text-white/60 hover:text-white/90 hover:bg-white/5'
-          }`}
-        >
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            width="24"
-            height="24"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            className="lucide lucide-settings w-6 h-6"
+        {/* Create Carousel Button */}
+        {isExpanded && (
+          <button
+            onClick={() => navigate('/create-carousel')}
+            className="w-full bg-blue text-white py-2 px-4 rounded-lg font-medium flex items-center justify-between hover:bg-blue-dark transition-colors"
           >
-            <path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z" />
-            <circle cx="12" cy="12" r="3" />
-          </svg>
-        </button>
+            <span>Gerar carrossel</span>
+            <ChevronRight className="w-4 h-4" />
+          </button>
+        )}
       </div>
     </nav>
   );

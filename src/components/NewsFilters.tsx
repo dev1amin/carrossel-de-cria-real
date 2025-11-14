@@ -37,18 +37,18 @@ const NewsFilters: React.FC<NewsFiltersProps> = ({
   };
 
   return (
-    <div className="flex flex-wrap gap-4 items-center">
+    <div className="flex flex-wrap gap-4 items-center justify-center">
       {/* Filtro de País */}
       <div className="flex-1 min-w-[200px]">
-        <label className="block text-white/60 text-sm mb-2">País</label>
+        <label className="block text-gray-dark text-sm mb-2">País</label>
         <select
           value={selectedCountry}
           onChange={(e) => onCountryChange(e.target.value)}
-          className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-2 text-white focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+          className="w-full bg-white border border-gray-light rounded-xl px-4 py-2 text-dark focus:outline-none focus:ring-2 focus:ring-blue focus:border-blue"
         >
           <option value="">Todos os países</option>
           {filters.countries.map((country) => (
-            <option key={country} value={country} className="bg-black">
+            <option key={country} value={country} className="bg-white">
               {getFlagEmoji(country)} {country.toUpperCase()}
             </option>
           ))}
@@ -57,15 +57,15 @@ const NewsFilters: React.FC<NewsFiltersProps> = ({
 
       {/* Filtro de Idioma */}
       <div className="flex-1 min-w-[200px]">
-        <label className="block text-white/60 text-sm mb-2">Idioma</label>
+        <label className="block text-gray-dark text-sm mb-2">Idioma</label>
         <select
           value={selectedLanguage}
           onChange={(e) => onLanguageChange(e.target.value)}
-          className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-2 text-white focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+          className="w-full bg-white border border-gray-light rounded-xl px-4 py-2 text-dark focus:outline-none focus:ring-2 focus:ring-blue focus:border-blue"
         >
           <option value="">Todos os idiomas</option>
           {filters.languages.map((lang) => (
-            <option key={lang} value={lang} className="bg-black">
+            <option key={lang} value={lang} className="bg-white">
               {getLanguageName(lang)}
             </option>
           ))}
@@ -79,7 +79,7 @@ const NewsFilters: React.FC<NewsFiltersProps> = ({
             onCountryChange('');
             onLanguageChange('');
           }}
-          className="mt-6 px-4 py-2 bg-white/5 hover:bg-white/10 border border-white/10 rounded-lg text-white/80 hover:text-white transition-colors"
+          className="mt-6 px-4 py-2 bg-white hover:bg-light border border-gray-light rounded-xl text-gray-dark hover:text-dark transition-all"
         >
           Limpar filtros
         </button>

@@ -1,13 +1,11 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Send, Loader2, Bot, User as UserIcon, ArrowLeft } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import Header from '../components/Header';
 import Navigation from '../components/Navigation';
 import PageTitle from '../components/PageTitle';
 import { TemplateSelectionModal } from '../components/carousel';
 import { CarouselPreviewModal } from '../components/carousel/CarouselPreviewModal';
 import { useEditorTabs } from '../contexts/EditorTabsContext';
-import { SortOption } from '../types';
 import type { CarouselData } from '../types/carousel';
 import {
   sendChatMessage,
@@ -18,8 +16,6 @@ import {
 } from '../services/chatbot';
 
 const ChatBotPage: React.FC = () => {
-  const [searchTerm, setSearchTerm] = useState('');
-  const [activeSort, setActiveSort] = useState<SortOption>('popular');
   const [messages, setMessages] = useState<ChatMessage[]>([
     {
       id: generateMessageId(),
@@ -31,7 +27,7 @@ const ChatBotPage: React.FC = () => {
   const [inputMessage, setInputMessage] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [isTemplateModalOpen, setIsTemplateModalOpen] = useState(false);
-  const [postCode, setPostCode] = useState('');
+  const [postCode] = useState('');
   const [waitingForTemplate, setWaitingForTemplate] = useState(false);
   const [isCarouselPreviewOpen, setIsCarouselPreviewOpen] = useState(false);
   const [carouselData, setCarouselData] = useState<any>(null);
@@ -342,14 +338,6 @@ const ChatBotPage: React.FC = () => {
     }
   };
 
-  const handleSearch = (term: string) => {
-    setSearchTerm(term);
-  };
-
-  const handleSortChange = (sort: SortOption) => {
-    setActiveSort(sort);
-  };
-
   const navigate = useNavigate();
   const { addEditorTab } = useEditorTabs();
 
@@ -397,16 +385,10 @@ const ChatBotPage: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-black">
+    <div className="min-h-screen bg-gray-50">
       <Navigation currentPage="chatbot" />
       
       <div className="md:ml-16">
-        <Header
-          onSearch={handleSearch}
-          activeSort={activeSort}
-          onSortChange={handleSortChange}
-        />
-
         {/* Title with Back Button */}
         <div className="relative">
           <PageTitle title="Chat de Criação" />
@@ -420,7 +402,7 @@ const ChatBotPage: React.FC = () => {
         </div>
 
         {/* Main Chat Container - Fixed height, no global scroll */}
-        <main className="fixed top-[120px] bottom-0 left-0 right-0 md:left-16 bg-black">
+        <main className="fixed top-[64px] bottom-0 left-0 right-0 md:left-16 bg-transparent">
           <div className="h-full flex flex-col max-w-5xl mx-auto w-full">
             {/* Messages Area - Scrollable */}
             <div 
@@ -463,21 +445,21 @@ const ChatBotPage: React.FC = () => {
                               handleCancelEdit();
                             }
                           }}
-                          className="w-full bg-black/10 text-black placeholder-black/40 rounded px-2 py-1 border border-black/20 focus:outline-none focus:ring-2 focus:ring-black/30 resize-none text-sm"
+                          className="w-full glass-card text-white placeholder-white/40 rounded-lg px-2 py-1 border border-primary-500/30 focus:outline-none focus:ring-2 focus:ring-primary-500 resize-none text-sm"
                           rows={1}
                           style={{ minHeight: '48px', maxHeight: '128px' }}
                         />
                         <div className="flex gap-2 justify-end">
                           <button
                             onClick={handleCancelEdit}
-                            className="px-3 py-1 text-xs bg-black/10 hover:bg-black/20 rounded transition-colors"
+                            className="px-3 py-1 text-xs glass-card hover:bg-primary-500/20 rounded-lg transition-colors text-white"
                           >
                             Cancelar (Esc)
                           </button>
                           <button
                             onClick={() => handleSaveEdit(message.id)}
                             disabled={!editingContent.trim()}
-                            className="px-3 py-1 text-xs bg-black hover:bg-black/80 text-white rounded transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                            className="px-3 py-1 text-xs bg-gradient-to-r from-primary-500 to-accent-500 hover:from-primary-600 hover:to-accent-600 text-white rounded-lg transition-all shadow-glow disabled:opacity-50 disabled:cursor-not-allowed"
                           >
                             Salvar (Enter)
                           </button>
@@ -553,7 +535,7 @@ const ChatBotPage: React.FC = () => {
             </div>
 
             {/* Input Area - Fixed at bottom */}
-            <div className="flex-shrink-0 border-t border-white/10 px-4 py-4 bg-black">
+            <div className="flex-shrink-0 border-t border-primary-500/20 px-4 py-4 glass-card">
               <div className="flex gap-2 items-end mb-2">
                 <div className="flex-1 relative">
                   <textarea
@@ -564,7 +546,7 @@ const ChatBotPage: React.FC = () => {
                     placeholder={waitingForTemplate ? "Aguardando seleção de template..." : "Digite sua mensagem..."}
                     disabled={isLoading || waitingForTemplate}
                     rows={1}
-                    className="w-full bg-white/5 text-white placeholder-white/40 rounded-lg px-4 py-3 border border-white/10 focus:outline-none focus:ring-2 focus:ring-white/20 resize-none overflow-hidden disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="w-full glass-card text-white placeholder-white/40 rounded-xl px-4 py-3 border border-primary-500/30 focus:outline-none focus:ring-2 focus:ring-primary-500 resize-none overflow-hidden disabled:opacity-50 disabled:cursor-not-allowed"
                     style={{
                       height: '48px',
                       maxHeight: '128px',
@@ -575,12 +557,12 @@ const ChatBotPage: React.FC = () => {
                 <button
                   onClick={handleSendMessage}
                   disabled={!inputMessage.trim() || isLoading || waitingForTemplate}
-                  className="flex-shrink-0 w-12 h-12 rounded-lg bg-white hover:bg-white/90 disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center justify-center"
+                  className="flex-shrink-0 w-12 h-12 rounded-xl bg-gradient-to-r from-primary-500 to-accent-500 hover:from-primary-600 hover:to-accent-600 disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center justify-center shadow-glow"
                 >
                   {isLoading ? (
-                    <Loader2 className="w-5 h-5 text-black animate-spin" />
+                    <Loader2 className="w-5 h-5 text-white animate-spin" />
                   ) : (
-                    <Send className="w-5 h-5 text-black" />
+                    <Send className="w-5 h-5 text-white" />
                   )}
                 </button>
               </div>
@@ -597,7 +579,7 @@ const ChatBotPage: React.FC = () => {
         {hasGeneratedCarousel && !isCarouselPreviewOpen && (
           <button
             onClick={() => setIsCarouselPreviewOpen(true)}
-            className="fixed top-[140px] right-6 bg-white hover:bg-gray-100 text-black px-6 py-3 rounded-full shadow-2xl border-2 border-black transition-all hover:scale-105 flex items-center gap-2 z-50"
+            className="fixed top-[140px] right-6 bg-gradient-to-r from-primary-500 to-accent-500 hover:from-primary-600 hover:to-accent-600 text-white px-6 py-3 rounded-full shadow-glow border-2 border-primary-400 transition-all hover:scale-105 flex items-center gap-2 z-50"
           >
             <span className="font-semibold">🎨 Ver Carrossel</span>
           </button>

@@ -196,9 +196,9 @@ const CreateBusinessPage: React.FC = () => {
             <textarea
               value={(formData[currentQuestion.key] as string) || ''}
               onChange={(e) => handleTextChange(e.target.value)}
-              className={`w-full px-4 py-3 bg-neutral-900 border ${
-                fieldError ? 'border-white' : 'border-neutral-800'
-              } rounded-lg text-white placeholder-neutral-500 focus:outline-none focus:border-white transition-colors resize-none`}
+              className={`w-full px-4 py-3 glass-card border ${
+                fieldError ? 'border-red-500' : 'border-primary-500/30'
+              } rounded-xl text-white placeholder-white/40 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-all resize-none`}
               rows={4}
               placeholder="Digite sua resposta..."
               maxLength={currentQuestion.key === 'mission_short' ? 500 : 2000}
@@ -224,10 +224,10 @@ const CreateBusinessPage: React.FC = () => {
                 <button
                   key={option.value}
                   onClick={() => handleSelectChange(option.value)}
-                  className={`w-full px-6 py-4 rounded-lg border-2 transition-all text-left ${
+                  className={`w-full px-6 py-4 rounded-xl border-2 transition-all text-left ${
                     formData[currentQuestion.key] === option.value
-                      ? 'border-white bg-white/10 text-white'
-                      : 'border-neutral-800 bg-neutral-900 text-neutral-300 hover:border-neutral-700'
+                      ? 'border-primary-500 bg-gradient-to-r from-primary-500/20 to-accent-500/20 text-white shadow-inner-glow'
+                      : 'glass-card border-primary-500/20 text-white/70 hover:border-primary-500/50 hover:text-white'
                   }`}
                 >
                   <div className="flex items-center justify-between">
@@ -265,15 +265,15 @@ const CreateBusinessPage: React.FC = () => {
                     handleArrayAdd();
                   }
                 }}
-                className={`flex-1 px-4 py-3 bg-neutral-900 border ${
-                  fieldError ? 'border-white' : 'border-neutral-800'
-                } rounded-lg text-white placeholder-neutral-500 focus:outline-none focus:border-white transition-colors`}
+                className={`flex-1 px-4 py-3 glass-card border ${
+                  fieldError ? 'border-red-500' : 'border-primary-500/30'
+                } rounded-xl text-white placeholder-white/40 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-all`}
                 placeholder="Digite um termo e pressione Enter..."
               />
               <button
                 onClick={handleArrayAdd}
                 disabled={!arrayInput.trim()}
-                className="px-6 py-3 bg-white text-black rounded-lg hover:bg-gray-200 transition-colors disabled:opacity-50 disabled:cursor-not-allowed font-medium"
+                className="px-6 py-3 bg-gradient-to-r from-primary-500 to-accent-500 text-white rounded-xl hover:from-primary-600 hover:to-accent-600 transition-all shadow-glow disabled:opacity-50 disabled:cursor-not-allowed font-medium"
               >
                 Adicionar
               </button>
@@ -291,12 +291,12 @@ const CreateBusinessPage: React.FC = () => {
                 {currentArray.map((item, index) => (
                   <div
                     key={index}
-                    className="flex items-center gap-2 px-4 py-2 bg-neutral-800 rounded-full text-sm text-neutral-300"
+                    className="flex items-center gap-2 px-4 py-2 glass-card border border-primary-500/30 rounded-full text-sm text-white"
                   >
                     <span>{item}</span>
                     <button
                       onClick={() => handleArrayRemove(index)}
-                      className="text-neutral-500 hover:text-white transition-colors"
+                      className="text-white/60 hover:text-white transition-colors"
                     >
                       ×
                     </button>
@@ -319,17 +319,17 @@ const CreateBusinessPage: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-black flex items-center justify-center p-4">
+    <div className="min-h-screen bg-gradient-to-br from-blue-light to-light flex items-center justify-center p-4">
       <div className="w-full max-w-2xl">
         {/* Header */}
         <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-16 h-16 bg-white/10 rounded-full mb-4">
-            <Building2 className="w-8 h-8 text-white" />
+          <div className="inline-flex items-center justify-center w-16 h-16 glass-card border border-primary-500/30 rounded-full mb-4">
+            <Building2 className="w-8 h-8 text-primary-400" />
           </div>
-          <h1 className="text-3xl font-bold text-white mb-2">
+          <h1 className="text-3xl font-bold text-white gradient-text mb-2">
             Configure seu Business
           </h1>
-          <p className="text-neutral-400">
+          <p className="text-white/70">
             Responda algumas perguntas para personalizar a geração de conteúdo
           </p>
         </div>
@@ -337,16 +337,16 @@ const CreateBusinessPage: React.FC = () => {
         {/* Progress Bar */}
         <div className="mb-8">
           <div className="flex justify-between items-center mb-2">
-            <span className="text-sm text-neutral-400">
+            <span className="text-sm text-white/70">
               Pergunta {currentStep + 1} de {FORM_QUESTIONS.length}
             </span>
-            <span className="text-sm text-neutral-400">
+            <span className="text-sm text-white/70">
               {Math.round(((currentStep + 1) / FORM_QUESTIONS.length) * 100)}%
             </span>
           </div>
-          <div className="w-full bg-neutral-800 rounded-full h-2">
+          <div className="w-full glass-card rounded-full h-2">
             <div
-              className="bg-white h-2 rounded-full transition-all duration-300"
+              className="progress-bar h-2 rounded-full transition-all duration-300"
               style={{
                 width: `${((currentStep + 1) / FORM_QUESTIONS.length) * 100}%`,
               }}
@@ -355,7 +355,7 @@ const CreateBusinessPage: React.FC = () => {
         </div>
 
         {/* Question Card */}
-        <div className="bg-neutral-950 border border-neutral-800 rounded-xl p-8 mb-6">
+        <div className="glass-card border border-primary-500/30 rounded-2xl p-8 mb-6">
           <h2 className="text-xl font-semibold text-white mb-6">
             {currentQuestion.question}
           </h2>
@@ -388,7 +388,7 @@ const CreateBusinessPage: React.FC = () => {
           <button
             onClick={handlePrevious}
             disabled={currentStep === 0}
-            className="flex items-center gap-2 px-6 py-3 bg-neutral-900 text-white rounded-lg hover:bg-neutral-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            className="flex items-center gap-2 px-6 py-3 glass-card border border-primary-500/30 text-white rounded-xl hover:bg-primary-500/20 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
           >
             <ArrowLeft className="w-4 h-4" />
             Anterior
@@ -397,7 +397,7 @@ const CreateBusinessPage: React.FC = () => {
           {!isLastStep ? (
             <button
               onClick={handleNext}
-              className="flex-1 px-6 py-3 bg-white text-black rounded-lg hover:bg-gray-200 transition-colors font-medium"
+              className="flex-1 px-6 py-3 bg-gradient-to-r from-primary-500 to-accent-500 text-white rounded-xl hover:from-primary-600 hover:to-accent-600 transition-all shadow-glow font-medium"
             >
               Próxima
             </button>
@@ -405,7 +405,7 @@ const CreateBusinessPage: React.FC = () => {
             <button
               onClick={handleSubmit}
               disabled={isSubmitting}
-              className="flex-1 px-6 py-3 bg-white text-black rounded-lg hover:bg-gray-200 transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+              className="flex-1 px-6 py-3 bg-gradient-to-r from-primary-500 to-accent-500 text-white rounded-xl hover:from-primary-600 hover:to-accent-600 transition-all shadow-glow font-medium disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
             >
               {isSubmitting ? (
                 <>

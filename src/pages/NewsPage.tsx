@@ -1,22 +1,21 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import Navigation from '../components/Navigation';
-import Header from '../components/Header';
-import PageTitle from '../components/PageTitle';
 import LoadingBar from '../components/LoadingBar';
 import NewsPostCard from '../components/NewsPostCard';
 import NewsFilters from '../components/NewsFilters';
 import Toast, { ToastMessage } from '../components/Toast';
 import { getNews } from '../services/news';
 import type { NewsItem, NewsFilters as NewsFiltersType, NewsPagination } from '../types/news';
-import type { SortOption } from '../types';
 import type { GenerationQueueItem } from '../carousel';
 import { 
   templateService, 
   templateRenderer, 
   generateCarousel, 
-  AVAILABLE_TEMPLATES
+  AVAILABLE_TEMPLATES,
+  CarouselEditorTabs
 } from '../carousel';
+import { useEditorTabs } from '../contexts/EditorTabsContext';
 import { useGenerationQueue } from '../contexts/GenerationQueueContext';
 
 interface NewsPageProps {
@@ -36,13 +35,21 @@ const NewsPage: React.FC<NewsPageProps> = ({ unviewedCount = 0 }) => {
   const [selectedLanguage, setSelectedLanguage] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [searchTerm, setSearchTerm] = useState('');
-  const [activeSort, setActiveSort] = useState<SortOption>('popular');
   const [toasts, setToasts] = useState<ToastMessage[]>([]);
-  const isMobile = window.innerWidth <= 768;
+
+  const {
+    editorTabs,
+    closeEditorTab,
+    closeAllEditorTabs,
+    shouldShowEditor,
+    setShouldShowEditor
+  } = useEditorTabs();
   
-  // Usa o contexto global da fila
-  const { addToQueue, removeFromQueue, generationQueue } = useGenerationQueue();
+  const { addToQueue, updateQueueItem, generationQueue } = useGenerationQueue();
+
+  useEffect(() => {
+    setShouldShowEditor(false);
+  }, [setShouldShowEditor]);
 
   const loadNews = async (page: number = 1) => {
     setIsLoading(true);
@@ -119,7 +126,7 @@ const NewsPage: React.FC<NewsPageProps> = ({ unviewedCount = 0 }) => {
       if (!result) {
         console.error('❌ Result é null ou undefined');
         addToast('Erro: resposta vazia do servidor', 'error');
-        removeFromQueue(queueItem.id);
+        updateQueueItem(queueItem.id, { status: 'error', errorMessage: 'Resposta vazia do servidor' });
         return;
       }
 
@@ -129,7 +136,7 @@ const NewsPage: React.FC<NewsPageProps> = ({ unviewedCount = 0 }) => {
       if (resultArray.length === 0) {
         console.error('❌ Array de resultado vazio');
         addToast('Erro: nenhum dado retornado', 'error');
-        removeFromQueue(queueItem.id);
+        updateQueueItem(queueItem.id, { status: 'error', errorMessage: 'Nenhum dado retornado' });
         return;
       }
 
@@ -139,7 +146,10 @@ const NewsPage: React.FC<NewsPageProps> = ({ unviewedCount = 0 }) => {
       if (!carouselData || !carouselData.dados_gerais) {
         console.error('❌ Dados inválidos:', { carouselData });
         addToast('Erro: formato de dados inválido', 'error');
-        removeFromQueue(queueItem.id);
+        updateQueueItem(queueItem.id, {
+          status: 'error',
+          errorMessage: 'Formato de dados inválido'
+        });
         return;
       }
 
@@ -183,19 +193,21 @@ const NewsPage: React.FC<NewsPageProps> = ({ unviewedCount = 0 }) => {
         console.error('❌ Erro ao atualizar cache/dispatch da galeria:', err);
       }
 
-      console.log('⏳ Adicionando toast...');
       addToast('Carrossel criado e adicionado à galeria', 'success');
-      console.log('✅ Toast adicionado');
-      
-      console.log('⏳ Removendo item da fila...');
-      removeFromQueue(queueItem.id);
-      console.log('✅ Item removido da fila');
+      updateQueueItem(queueItem.id, {
+        status: 'completed',
+        completedAt: Date.now(),
+        slides: rendered,
+        carouselData: carouselData
+      });
       console.log('🎉 Processo completo!');
     } catch (error) {
       console.error('❌ ERRO em handleGenerateCarousel:', error);
-      console.error('❌ Stack:', error instanceof Error ? error.stack : 'N/A');
       addToast('Erro ao gerar carrossel. Tente novamente.', 'error');
-      removeFromQueue(queueItem.id);
+      updateQueueItem(queueItem.id, {
+        status: 'error',
+        errorMessage: error instanceof Error ? error.message : 'Erro desconhecido'
+      });
     }
   };
 
@@ -233,15 +245,15 @@ const NewsPage: React.FC<NewsPageProps> = ({ unviewedCount = 0 }) => {
         strokeWidth="1.5"
         strokeLinecap="round"
         strokeLinejoin="round"
-        className="text-white/20 mb-4"
+        className="text-gray-light mb-4"
       >
         <path d="M4 22h16a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2H8a2 2 0 0 0-2 2v16a2 2 0 0 1-2 2Zm0 0a2 2 0 0 1-2-2v-9c0-1.1.9-2 2-2h2" />
         <path d="M18 14h-8" />
         <path d="M15 18h-5" />
         <path d="M10 6h8v4h-8V6Z" />
       </svg>
-      <h3 className="text-white/60 text-lg font-medium mb-2">Nenhuma notícia encontrada</h3>
-      <p className="text-white/40 text-sm text-center max-w-md">
+      <h3 className="text-gray text-lg font-medium mb-2">Nenhuma notícia encontrada</h3>
+      <p className="text-gray text-sm text-center max-w-md">
         Não há notícias disponíveis para os filtros selecionados ou você ainda não configurou seus niches.
       </p>
     </div>
@@ -249,108 +261,150 @@ const NewsPage: React.FC<NewsPageProps> = ({ unviewedCount = 0 }) => {
 
   if (error) {
     return (
-      <div className="min-h-screen bg-black text-white flex items-center justify-center p-4">
-        <div className="bg-red-500/10 border border-red-500/50 rounded-lg p-6 max-w-md">
-          <p className="text-red-500 mb-4">{error}</p>
+      <div className="min-h-screen bg-light text-dark flex items-center justify-center p-4">
+        <div className="bg-red-50 border border-red-200 rounded-lg p-4 max-w-md">
+          <p className="text-red-600">{error}</p>
           <button
             onClick={() => loadNews(1)}
-            className="w-full text-white bg-red-500 px-4 py-2 rounded-lg hover:bg-red-600 transition-colors"
+            className="mt-4 text-white bg-red-500 px-4 py-2 rounded-lg hover:bg-red-600 transition-colors"
           >
-            Tentar novamente
+            Retry
           </button>
         </div>
       </div>
     );
   }
 
+  // Uso do useMemo para evitar re-renderização do menu
+  const memoizedNavigation = useMemo(() => <Navigation currentPage="news" unviewedCount={unviewedCount} />, [unviewedCount]);
+
   return (
-    <div className="flex h-screen bg-black">
-      <Navigation currentPage="news" unviewedCount={unviewedCount} />
-      <div className="flex-1 ml-16">
+    <div className="flex h-screen bg-light">
+      {memoizedNavigation}
+      <div className="flex-1">
+        {shouldShowEditor && (
+          <CarouselEditorTabs
+            tabs={editorTabs}
+            onCloseTab={closeEditorTab}
+            onCloseAll={closeAllEditorTabs}
+            onEditorsClosed={() => setShouldShowEditor(false)}
+          />
+        )}
         <Toast toasts={toasts} onRemove={removeToast} />
         <LoadingBar isLoading={isLoading} />
-        
-        {/* Header */}
-        <Header
-          onSearch={setSearchTerm}
-          activeSort={activeSort}
-          onSortChange={setActiveSort}
-        />
 
-        {/* Main Content */}
-        <main className={`pt-14 ${generationQueue.length > 0 ? 'mt-20' : ''} bg-black min-h-screen`}>
-          <div>
-            <PageTitle title="Notícias" /> {/* Título igual ao da Notícias */}
-          </div>
-          
-          {/* Filtros */}
-          {(filters.countries.length > 0 || filters.languages.length > 0) && (
-            <div className="container mx-auto px-4 pt-4 pb-2">
-              <div className="bg-white/5 border border-white/10 rounded-lg p-4">
-                <NewsFilters
-                  filters={filters}
-                  selectedCountry={selectedCountry}
-                  selectedLanguage={selectedLanguage}
-                  onCountryChange={setSelectedCountry}
-                  onLanguageChange={setSelectedLanguage}
-                />
-              </div>
-            </div>
-          )}
+        <main className={`${generationQueue.length > 0 ? 'mt-20' : ''}`}>
+        <section className="relative pb-[7rem]">
+            {/* Bola de luz agora com animação de cima para baixo */}
+            <div
+              className="absolute top-[-200px] left-1/2 -translate-x-1/2 w-[900px] h-[900px] pointer-events-none"
+              style={{
+                background: "radial-gradient(circle, rgba(59,130,246,0.15) 0%, rgba(59,130,246,0.08) 30%, rgba(255,255,255,0) 70%)",
+                filter: "blur(70px)",
+                animation: "glowDown 3s ease-in-out infinite"
+              }}
+            />
 
-          {/* Lista de Notícias */}
-          {news.length === 0 && !isLoading ? (
-            <EmptyState />
-          ) : (
-            <div className={`container mx-auto ${isMobile ? 'px-0' : 'px-4'} py-2`}>
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 justify-items-center">
-                <AnimatePresence>
-                  {news.map((item, index) => (
-                    <motion.div
-                      key={item.id}
-                      layout
-                      initial={{ opacity: 0, y: 20 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0, y: 20 }}
-                      transition={{ duration: 0.3 }}
-                      className="w-full flex justify-center"
-                    >
-                      <NewsPostCard
-                        news={item}
-                        index={index}
-                        onGenerateCarousel={handleGenerateCarousel}
-                      />
-                    </motion.div>
-                  ))}
-                </AnimatePresence>
+            {/* Quadrados mais visíveis e ocupando mais altura */}
+            <div
+              className="pointer-events-none absolute inset-0 opacity-60"
+              style={{
+                backgroundImage: `linear-gradient(rgba(59,130,246,0.5) 1px, transparent 1px), linear-gradient(90deg, rgba(59,130,246,0.5) 1px, transparent 1px)`,
+                backgroundSize: "50px 50px",
+                height: "50vh", // A altura foi ajustada para ocupar até metade do primeiro carrossel
+              }}
+            />
+
+            {/* Fade azul para branco no final */}
+            <div
+              className="absolute inset-0 bottom-0 pointer-events-none"
+              style={{
+                background: "linear-gradient(to bottom, rgba(249,250,251,0) 50%, rgba(249,250,251,0.95) 100%)" // A altura do fade agora é maior
+              }}
+            />
+
+            {/* Conteúdo normal */}
+            <div className="relative max-w-5xl mx-auto px-8 pt-[6rem] pb-[4.5rem] space-y-6">
+              <div className="text-center">
+                <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold text-dark mb-3">
+                  Separamos as melhores notícias pra você!
+                </h1>
+                <p className="text-lg md:text-xl text-gray-dark">
+                  Aqui está o seu feed de notícias!
+                </p>
               </div>
 
-              {/* Paginação */}
-              {pagination.totalPages > 1 && (
-                <div className="flex items-center justify-center gap-4 mt-8 pb-8">
-                  <button
-                    onClick={handlePreviousPage}
-                    disabled={pagination.page === 1}
-                    className="px-4 py-2 bg-white/5 hover:bg-white/10 disabled:opacity-50 disabled:cursor-not-allowed border border-white/10 rounded-lg text-white transition-colors"
-                  >
-                    Anterior
-                  </button>
-                  
-                  <span className="text-white/60">
-                    Página {pagination.page} de {pagination.totalPages}
-                  </span>
-                  
-                  <button
-                    onClick={handleNextPage}
-                    disabled={pagination.page === pagination.totalPages}
-                    className="px-4 py-2 bg-white/5 hover:bg-white/10 disabled:opacity-50 disabled:cursor-not-allowed border border-white/10 rounded-lg text-white transition-colors"
-                  >
-                    Próxima
-                  </button>
+              {/* Filtros de Notícias */}
+              {(filters.countries.length > 0 || filters.languages.length > 0) && (
+                <div className="max-w-3xl mx-auto">
+                  <NewsFilters
+                    filters={filters}
+                    selectedCountry={selectedCountry}
+                    selectedLanguage={selectedLanguage}
+                    onCountryChange={setSelectedCountry}
+                    onLanguageChange={setSelectedLanguage}
+                  />
                 </div>
               )}
             </div>
-          )}
+
+          </section>
+
+          {/* Feed de Notícias logo em seguida */}
+          <section className="max-w-6xl mx-auto px-8 -mt-[6.5rem]">
+            {news.length === 0 && !isLoading ? (
+              <EmptyState />
+            ) : (
+              <>
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 justify-items-center">
+                  <AnimatePresence>
+                    {news.map((item, index) => (
+                      <motion.div
+                        key={item.id}
+                        layout
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: 20 }}
+                        transition={{ duration: 0.3 }}
+                        className="w-full flex justify-center"
+                      >
+                        <NewsPostCard
+                          news={item}
+                          index={index}
+                          onGenerateCarousel={handleGenerateCarousel}
+                        />
+                      </motion.div>
+                    ))}
+                  </AnimatePresence>
+                </div>
+
+                {/* Paginação */}
+                {pagination.totalPages > 1 && (
+                  <div className="flex items-center justify-center gap-4 mt-8 pb-8">
+                    <button
+                      onClick={handlePreviousPage}
+                      disabled={pagination.page === 1}
+                      className="px-4 py-2 bg-white hover:bg-light disabled:opacity-50 disabled:cursor-not-allowed border border-gray-light rounded-lg text-dark transition-colors"
+                    >
+                      Anterior
+                    </button>
+                    
+                    <span className="text-gray">
+                      Página {pagination.page} de {pagination.totalPages}
+                    </span>
+                    
+                    <button
+                      onClick={handleNextPage}
+                      disabled={pagination.page === pagination.totalPages}
+                      className="px-4 py-2 bg-white hover:bg-light disabled:opacity-50 disabled:cursor-not-allowed border border-gray-light rounded-lg text-dark transition-colors"
+                    >
+                      Próxima
+                    </button>
+                  </div>
+                )}
+              </>
+            )}
+          </section>
         </main>
       </div>
     </div>

@@ -89,13 +89,13 @@ const PostCard: React.FC<PostCardProps> = ({ post, index, onGenerateCarousel }) 
         />
         <button
           onClick={handleOpenOriginal}
-          className="absolute top-3 right-1 z-50 bg-black text-white px-3 py-1.5 rounded text-sm flex items-center space-x-2 transition-colors"
+          className="absolute top-3 right-1 z-50 bg-white/90 text-gray-900 px-3 py-1.5 rounded text-sm flex items-center space-x-2 shadow-lg hover:bg-white transition-colors"
         >
           <ExternalLink className="w-4 h-4" />
           <span>See Content</span>
         </button>
         <div className="absolute bottom-4 right-4 z-50 flex flex-col items-end space-y-2">
-          <div className="bg-black/70 backdrop-blur-sm text-white px-3 py-1.5 rounded-full text-sm flex items-center space-x-2">
+          <div className="bg-gray-900/80 backdrop-blur-sm text-white px-3 py-1.5 rounded-full text-sm flex items-center space-x-2">
             {getRankIcon(index)}
             <span>#{index + 1}</span>
           </div>

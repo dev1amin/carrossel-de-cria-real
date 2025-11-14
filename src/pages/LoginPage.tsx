@@ -47,7 +47,7 @@ const LoginPage: React.FC<LoginPageProps> = ({ onLoginSuccess }) => {
   };
 
   return (
-    <div className="min-h-screen bg-black flex items-center justify-center p-4">
+    <div className="min-h-screen bg-gradient-to-br from-blue-light to-light flex items-center justify-center p-4">
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
           <img
@@ -55,8 +55,8 @@ const LoginPage: React.FC<LoginPageProps> = ({ onLoginSuccess }) => {
             alt="Workez Logo"
             className="h-8 mx-auto mb-6"
           />
-          <h1 className="text-2xl font-bold text-white">Work Smarter, not Harder!</h1>
-          <p className="text-gray-400 mt-2">Sign in to your account</p>
+          <h1 className="text-2xl font-bold text-dark">Work Smarter, not Harder!</h1>
+          <p className="text-gray mt-2">Sign in to your account</p>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-6">
@@ -67,7 +67,7 @@ const LoginPage: React.FC<LoginPageProps> = ({ onLoginSuccess }) => {
           )}
 
           <div>
-            <label htmlFor="email" className="block text-sm font-medium text-gray-300 mb-2">
+            <label htmlFor="email" className="block text-sm font-medium text-gray-dark mb-2">
               Email
             </label>
             <input
@@ -75,14 +75,14 @@ const LoginPage: React.FC<LoginPageProps> = ({ onLoginSuccess }) => {
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-white"
+              className="w-full bg-white border border-gray-light rounded-lg px-4 py-3 text-dark placeholder-gray focus:outline-none focus:ring-2 focus:ring-blue"
               placeholder="Enter your email"
               required
             />
           </div>
 
           <div>
-            <label htmlFor="password" className="block text-sm font-medium text-gray-300 mb-2">
+            <label htmlFor="password" className="block text-sm font-medium text-gray-dark mb-2">
               Password
             </label>
             <input
@@ -90,7 +90,7 @@ const LoginPage: React.FC<LoginPageProps> = ({ onLoginSuccess }) => {
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-white"
+              className="w-full bg-white border border-gray-light rounded-lg px-4 py-3 text-dark placeholder-gray focus:outline-none focus:ring-2 focus:ring-blue"
               placeholder="Enter your password"
               required
             />
@@ -99,7 +99,7 @@ const LoginPage: React.FC<LoginPageProps> = ({ onLoginSuccess }) => {
           <button
             type="submit"
             disabled={isLoading}
-            className="w-full bg-white text-black rounded-lg px-4 py-3 flex items-center justify-center space-x-2 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-black disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            className="w-full bg-blue text-white rounded-lg px-4 py-3 flex items-center justify-center space-x-2 hover:bg-blue-dark focus:outline-none focus:ring-2 focus:ring-blue focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
           >
             <span>{isLoading ? 'Signing in...' : 'Sign in'}</span>
             {!isLoading && <ArrowRight className="w-4 h-4" />}

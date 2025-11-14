@@ -1,7 +1,6 @@
 import React from 'react';
-import { Scale, TestTube } from 'lucide-react';
+import { TestTube } from 'lucide-react';
 import { motion } from 'framer-motion';
-import FilterBar from './FilterBar';
 import { SortOption } from '../types';
 
 interface HeaderProps {
@@ -11,9 +10,9 @@ interface HeaderProps {
   onTestEditor?: () => void;
 }
 
-const Header: React.FC<HeaderProps> = ({ onSearch, activeSort, onSortChange, onTestEditor }) => {
+const Header: React.FC<HeaderProps> = ({ onTestEditor }) => {
   return (
-    <header className="fixed top-0 left-0 right-0 bg-black h-14 z-[100] shadow-lg">
+    <header className="fixed top-0 left-0 right-0 bg-white border-b border-gray-light h-14 z-[100] shadow-sm">
       <div className="container mx-auto px-4">
         <div className="flex items-center justify-between h-14">
           <motion.div 
@@ -39,12 +38,6 @@ const Header: React.FC<HeaderProps> = ({ onSearch, activeSort, onSortChange, onT
                 <span>Test Editor</span>
               </button>
             )}
-            <div className="w-32">
-              <FilterBar
-                activeSort={activeSort}
-                onSortChange={onSortChange}
-              />
-            </div>
           </div>
         </div>
       </div>

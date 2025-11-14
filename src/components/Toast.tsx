@@ -41,21 +41,21 @@ const Toast: React.FC<ToastProps> = ({ toasts, onRemove }) => {
             animate={{ x: 0, opacity: 1 }}
             exit={{ x: 400, opacity: 0 }}
             transition={{ type: 'spring', stiffness: 300, damping: 30 }}
-            className={`flex items-center space-x-3 px-4 py-3 rounded-lg shadow-lg min-w-[300px] ${
+            className={`flex items-center space-x-3 px-4 py-3 rounded-xl shadow-card min-w-[300px] glass-card ${
               toast.type === 'success'
-                ? 'bg-zinc-900/95 text-white border border-zinc-800'
-                : 'bg-zinc-900/95 text-white border border-zinc-800'
+                ? 'border border-green-500/50'
+                : 'border border-red-500/50'
             }`}
           >
             {toast.type === 'success' ? (
-              <CheckCircle2 className="w-5 h-5 flex-shrink-0" />
+              <CheckCircle2 className="w-5 h-5 flex-shrink-0 text-green-400" />
             ) : (
-              <XCircle className="w-5 h-5 flex-shrink-0" />
+              <XCircle className="w-5 h-5 flex-shrink-0 text-red-400" />
             )}
-            <p className="flex-1 text-sm font-medium">{toast.message}</p>
+            <p className="flex-1 text-sm font-medium text-white">{toast.message}</p>
             <button
               onClick={() => onRemove(toast.id)}
-              className="hover:bg-white/20 rounded p-1 transition-colors"
+              className="hover:bg-primary-500/20 rounded p-1 transition-colors text-white/70 hover:text-white"
             >
               <X className="w-4 h-4" />
             </button>
